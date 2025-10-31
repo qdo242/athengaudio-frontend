@@ -1,0 +1,299 @@
+<div class="product-detail-page">
+  <div class="container">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <a routerLink="/">Trang chủ</a>
+      <span class="separator">/</span>
+      <a routerLink="/products">Sản phẩm</a>
+      <span class="separator">/</span>
+      <span class="current" *ngIf="product">{{ product.name }}</span>
+    </div>
+
+    @if (product) {
+      <div class="product-detail">
+        <!-- Product Images & Info -->
+        <div class="product-main">
+          <!-- Product Images -->
+          <div class="product-images">
+            <div class="main-image">
+              <img [src]="selectedImage" [alt]="product.name" class="product-image">
+              @if (product.originalPrice) {
+                <div class="discount-badge">
+                  -{{ getDiscount() }}%
+                </div>
+              }
+              @if (!product.inStock) {
+                <div class="out-of-stock-overlay">
+                  <span>Hết Hàng</span>
+                </div>
+              }
+            </div>
+            
+            <div class="image-thumbnails">
+              <div 
+                class="thumbnail" 
+                [class.active]="selectedImage === product.image"
+                (click)="changeImage(product.image)"
+              >
+                <img [src]="product.image" [alt]="product.name">
+              </div>
+              <!-- Có thể thêm nhiều ảnh khác ở đây -->
+            </div>
+          </div>
+
+          <!-- Product Info -->
+          <div class="product-info">
+            <div class="product-header">
+              <h1 class="product-title">{{ product.name }}</h1>
+              <div class="product-meta">
+                <span class="product-brand">Thương hiệu: {{ product.brand }}</span>
+                <span class="product-sku">Mã SP: #{{ product.id }}</span>
+              </div>
+            </div>
+
+            <!-- Rating -->
+            <div class="product-rating">
+              <div class="rating-stars">
+                <span class="stars">{{ getStarRating(product.rating) }}</span>
+                <span class="rating-value">{{ product.rating }}/5</span>
+              </div>
+              <span class="reviews-count">({{ product.reviews }} đánh giá)</span>
+            </div>
+
+            <!-- Price -->
+            <div class="product-price">
+              <span class="current-price">{{ product.price | number }}₫</span>
+              @if (product.originalPrice) {
+                <span class="original-price">{{ product.originalPrice | number }}₫</span>
+              }
+            </div>
+
+            <!-- Short Description -->
+            <div class="product-short-desc">
+              <p>{{ product.description }}</p>
+            </div>
+
+            <!-- Features -->
+            <div class="product-features">
+              <h3>Đặc điểm nổi bật:</h3>
+              <ul class="features-list">
+                @for (feature of product.features; track feature) {
+                  <li class="feature-item">✓ {{ feature }}</li>
+                }
+              </ul>
+            </div>
+
+            <!-- Quantity & Actions -->
+            <div class="product-actions">
+              <div class="quantity-selector">
+                <label class="quantity-label">Số lượng:</label>
+                <div class="quantity-controls">
+                  <button 
+                    class="quantity-btn" 
+                    (click)="decreaseQuantity()"
+                    [disabled]="quantity <= 1"
+                  >
+                    −
+                  </button>
+                  <span class="quantity-display">{{ quantity }}</span>
+                  <button 
+                    class="quantity-btn" 
+                    (click)="increaseQuantity()"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div class="action-buttons">
+                <button 
+                  class="btn btn-secondary add-to-cart-btn"
+                  (click)="addToCart()"
+                  [disabled]="!product.inStock"
+                >
+                  🛒 Thêm Vào Giỏ
+                </button>
+                <button 
+                  class="btn btn-primary buy-now-btn"
+                  (click)="buyNow()"
+                  [disabled]="!product.inStock"
+                >
+                  Mua Ngay
+                </button>
+              </div>
+            </div>
+
+            <!-- Product Meta -->
+            <div class="product-meta-info">
+              <div class="meta-item">
+                <span class="meta-icon">🚚</span>
+                <div class="meta-text">
+                  <strong>Giao hàng miễn phí</strong>
+                  <span>Cho đơn hàng từ 500K</span>
+                </div>
+              </div>
+              <div class="meta-item">
+                <span class="meta-icon">🔒</span>
+                <div class="meta-text">
+                  <strong>Bảo hành 2 năm</strong>
+                  <span>Chính hãng toàn quốc</span>
+                </div>
+              </div>
+              <div class="meta-item">
+                <span class="meta-icon">🔄</span>
+                <div class="meta-text">
+                  <strong>Đổi trả 30 ngày</strong>
+                  <span>Hoàn tiền 100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Tabs -->
+        <div class="product-tabs">
+          <div class="tab-headers">
+            <button 
+              class="tab-header" 
+              [class.active]="activeTab === 'description'"
+              (click)="setActiveTab('description')"
+            >
+              Mô Tả Sản Phẩm
+            </button>
+            <button 
+              class="tab-header" 
+              [class.active]="activeTab === 'specs'"
+              (click)="setActiveTab('specs')"
+            >
+              Thông Số Kỹ Thuật
+            </button>
+            <button 
+              class="tab-header" 
+              [class.active]="activeTab === 'reviews'"
+              (click)="setActiveTab('reviews')"
+            >
+              Đánh Giá ({{ product.reviews }})
+            </button>
+          </div>
+
+          <div class="tab-content">
+            @if (activeTab === 'description') {
+              <div class="tab-pane">
+                <h3>Chi Tiết Sản Phẩm</h3>
+                <p>{{ product.description }}</p>
+                <div class="detailed-features">
+                  <h4>Tính năng chi tiết:</h4>
+                  <ul>
+                    @for (feature of product.features; track feature) {
+                      <li>{{ feature }}</li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            }
+
+            @if (activeTab === 'specs') {
+              <div class="tab-pane">
+                <h3>Thông Số Kỹ Thuật</h3>
+                <div class="specs-table">
+                  <div class="spec-row">
+                    <span class="spec-label">Thương hiệu</span>
+                    <span class="spec-value">{{ product.brand }}</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Loại tai nghe</span>
+                    <span class="spec-value">{{ product.category }}</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Kết nối</span>
+                    <span class="spec-value">Bluetooth 5.0, Jack 3.5mm</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Thời lượng pin</span>
+                    <span class="spec-value">30 giờ</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Chống ồn</span>
+                    <span class="spec-value">Có</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-label">Trọng lượng</span>
+                    <span class="spec-value">250g</span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (activeTab === 'reviews') {
+              <div class="tab-pane">
+                <h3>Đánh Giá Từ Khách Hàng</h3>
+                <div class="reviews-summary">
+                  <div class="overall-rating">
+                    <div class="rating-score">{{ product.rating }}</div>
+                    <div class="rating-stars-large">{{ getStarRating(product.rating) }}</div>
+                    <div class="rating-text">{{ product.reviews }} đánh giá</div>
+                  </div>
+                  
+                  <div class="reviews-list">
+                    <div class="review-item">
+                      <div class="review-header">
+                        <span class="reviewer-name">Nguyễn Văn A</span>
+                        <span class="review-rating">★★★★★</span>
+                      </div>
+                      <p class="review-content">
+                        "Sản phẩm chất lượng tuyệt vời, âm thanh sống động. Giao hàng nhanh, đóng gói cẩn thận."
+                      </p>
+                      <span class="review-date">15/12/2024</span>
+                    </div>
+                    
+                    <div class="review-item">
+                      <div class="review-header">
+                        <span class="reviewer-name">Trần Thị B</span>
+                        <span class="review-rating">★★★★☆</span>
+                      </div>
+                      <p class="review-content">
+                        "Tai nghe đẹp, âm bass tốt. Pin sử dụng được lâu. Nhưng hơi nặng khi đeo lâu."
+                      </p>
+                      <span class="review-date">10/12/2024</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Related Products -->
+        @if (relatedProducts.length > 0) {
+          <div class="related-products">
+            <h2 class="section-title">Sản Phẩm Liên Quan</h2>
+            <div class="related-products-grid">
+              @for (relatedProduct of relatedProducts; track relatedProduct.id) {
+                <div class="related-product-card" [routerLink]="['/products', relatedProduct.id]">
+                  <div class="product-image">
+                    <img [src]="relatedProduct.image" [alt]="relatedProduct.name">
+                  </div>
+                  <div class="product-info">
+                    <h3 class="product-name">{{ relatedProduct.name }}</h3>
+                    <p class="product-brand">{{ relatedProduct.brand }}</p>
+                    <div class="product-price">
+                      <span class="current-price">{{ relatedProduct.price | number }}₫</span>
+                      @if (relatedProduct.originalPrice) {
+                        <span class="original-price">{{ relatedProduct.originalPrice | number }}₫</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Đang tải thông tin sản phẩm...</p>
+      </div>
+    }
+  </div>
+</div>

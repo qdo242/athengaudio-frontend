@@ -1,3 +1,24 @@
 import { Routes } from '@angular/router';
+import { Home } from './pages/home/home';
 
-export const routes: Routes = [];
+import { ProductDetail } from './pages/product-detail/product-detail';
+import { Login } from './pages/login/login';
+import { Register } from './pages/register/register';
+import { Cart } from './pages/cart/cart';
+import { Checkout } from './pages/checkout/checkout';
+import { authGuard } from './guards/auth-guard';
+import { Admin } from './pages/admin/admin';
+import { adminGuard } from './guards/admin-guard';
+import { Products } from './pages/products/products';
+
+export const routes: Routes = [
+    {path: '', component:Home},
+    {path:'products', component:Products},
+    {path:'products/:id', component:ProductDetail},
+    {path:'login', component:Login},
+    {path:'register',component:Register},
+    {path:'cart', component:Cart},
+    {path:'checkout', component:Checkout, canActivate:[authGuard]},
+    {path:'admin', component: Admin, canActivate:[authGuard,adminGuard]},
+    {path: '**', redirectTo: ''}
+];

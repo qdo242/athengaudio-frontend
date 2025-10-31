@@ -1,0 +1,107 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <!-- Logo -->
+      <div class="logo">
+        <a routerLink="/home">
+          <h1>AthengAudio</h1>
+        </a>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="nav" [class.active]="isMenuOpen">
+        <a routerLink="/home" routerLinkActive="active" (click)="isMenuOpen = false">Trang chủ</a>
+        <a routerLink="/products" routerLinkActive="active" (click)="isMenuOpen = false">Sản phẩm</a>
+        <a routerLink="/about" routerLinkActive="active" (click)="isMenuOpen = false">Giới thiệu</a>
+        <a routerLink="/contact" routerLinkActive="active" (click)="isMenuOpen = false">Liên hệ</a>
+        
+        <!-- Admin Link (only for admin) -->
+        <a *ngIf="isAdmin" routerLink="/admin" routerLinkActive="active" (click)="isMenuOpen = false">
+          ⚙️ Quản trị
+        </a>
+      </nav>
+
+      <!-- User Actions -->
+      <div class="user-actions">
+        <!-- Wishlist -->
+        <a *ngIf="authService.isLoggedIn" routerLink="/wishlist" class="icon-btn" title="Yêu thích">
+          ❤️
+          <span class="badge" *ngIf="authService.currentUserValue?.wishlist?.length">
+            {{ authService.currentUserValue?.wishlist?.length }}
+          </span>
+        </a>
+
+        <!-- Cart -->
+        <a routerLink="/cart" class="icon-btn" title="Giỏ hàng" [class.has-items]="cartItemCount > 0">
+          🛒
+          <span class="badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+        </a>
+
+        <!-- User Menu -->
+        <div class="user-menu" *ngIf="authService.isLoggedIn; else loginButton">
+          <button class="user-btn" (click)="toggleUserMenu()">
+            <span class="user-avatar" [title]="userName">
+              {{ userInitials }}
+            </span>
+            <span class="user-name">{{ userName }}</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+
+          <div class="user-dropdown" [class.active]="isUserMenuOpen">
+            <div class="user-info">
+              <strong>{{ userName }}</strong>
+              <small>
+                <span class="role-badge" [class.admin]="isAdmin">
+                  {{ isAdmin ? '👑 Quản trị viên' : '👤 Người dùng' }}
+                </span>
+              </small>
+              <small>{{ authService.userEmail }}</small>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <a routerLink="/profile" class="dropdown-item" (click)="isUserMenuOpen = false">
+              👤 Hồ sơ cá nhân
+            </a>
+            <a routerLink="/orders" class="dropdown-item" (click)="isUserMenuOpen = false">
+              📦 Đơn hàng của tôi
+            </a>
+            <a routerLink="/wishlist" class="dropdown-item" (click)="isUserMenuOpen = false">
+              ❤️ Danh sách yêu thích
+              <span class="wishlist-count" *ngIf="authService.currentUserValue?.wishlist?.length">
+                ({{ authService.currentUserValue?.wishlist?.length }})
+              </span>
+            </a>
+            
+            <div class="dropdown-divider"></div>
+            
+            <a *ngIf="isAdmin" routerLink="/admin" class="dropdown-item admin-link" (click)="isUserMenuOpen = false">
+              ⚙️ Trang quản trị
+            </a>
+            
+            <div class="dropdown-divider" *ngIf="isAdmin"></div>
+            
+            <button class="dropdown-item logout" (click)="logout()">
+              🚪 Đăng xuất
+            </button>
+          </div>
+        </div>
+
+        <ng-template #loginButton>
+          <div class="auth-buttons">
+            <a routerLink="/login" class="login-btn">Đăng nhập</a>
+            <a routerLink="/register" class="register-btn">Đăng ký</a>
+          </div>
+        </ng-template>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" (click)="toggleMenu()">
+          ☰
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Overlay for mobile menu -->
+<div class="overlay" [class.active]="isMenuOpen" (click)="isMenuOpen = false"></div>

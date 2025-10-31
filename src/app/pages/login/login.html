@@ -1,0 +1,124 @@
+<div class="login-page">
+  <div class="container">
+    <div class="login-container">
+      <!-- Left Side - Form -->
+      <div class="login-form-section">
+        <div class="form-header">
+          <a routerLink="/" class="back-home">
+            ← Quay lại trang chủ
+          </a>
+          <h1 class="form-title">Đăng Nhập</h1>
+          <p class="form-subtitle">Chào mừng trở lại! Vui lòng đăng nhập vào tài khoản của bạn.</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="login-form">
+          <!-- Email Field -->
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input
+              type="email"
+              id="email"
+              [(ngModel)]="credentials.email"
+              name="email"
+              class="form-input"
+              placeholder="Nhập địa chỉ email"
+              required
+            >
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="password" class="form-label">Mật Khẩu</label>
+            <input
+              type="password"
+              id="password"
+              [(ngModel)]="credentials.password"
+              name="password"
+              class="form-input"
+              placeholder="Nhập mật khẩu"
+              required
+            >
+          </div>
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="error-message">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="login-btn"
+            [disabled]="isLoading"
+            [class.loading]="isLoading"
+          >
+            @if (isLoading) {
+              <span class="loading-spinner"></span>
+            }
+            {{ isLoading ? 'Đang đăng nhập...' : 'Đăng Nhập' }}
+          </button>
+
+          <!-- Demo Accounts -->
+          <div class="demo-accounts">
+            <p class="demo-title">Tài khoản demo:</p>
+            <div class="demo-buttons">
+              <button
+                type="button"
+                class="demo-btn admin-demo"
+                (click)="loginWithDemo('admin')"
+              >
+                Đăng nhập Admin
+              </button>
+              <button
+                type="button"
+                class="demo-btn user-demo"
+                (click)="loginWithDemo('user')"
+              >
+                Đăng nhập User
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">
+          <span>Hoặc</span>
+        </div>
+
+        <!-- Social Login -->
+        <div class="social-login">
+          <button class="social-btn google-btn">
+            <span class="social-icon">🔍</span>
+            Tiếp tục với Google
+          </button>
+          <button class="social-btn facebook-btn">
+            <span class="social-icon">📘</span>
+            Tiếp tục với Facebook
+          </button>
+        </div>
+
+        <!-- Register Link -->
+        <div class="register-link">
+          <p>Chưa có tài khoản? <a routerLink="/register" class="link">Đăng ký ngay</a></p>
+        </div>
+      </div>
+
+      <!-- Right Side - Illustration -->
+      <div class="login-illustration">
+        <div class="illustration-content">
+          <div class="illustration-image">
+            <div class="floating-headphone">🎵</div>
+            <div class="floating-music">🎶</div>
+            <div class="floating-sound">🔊</div>
+          </div>
+          <div class="illustration-text">
+            <h2>Trải Nghiệm Âm Thanh Đích Thực</h2>
+            <p>Khám phá thế giới âm thanh sống động với những thiết bị cao cấp nhất</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

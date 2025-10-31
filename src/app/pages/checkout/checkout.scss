@@ -1,0 +1,146 @@
+.order-success-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.success-card {
+  background: white;
+  padding: 50px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  text-align: center;
+
+  .success-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    animation: bounce 1s ease-in-out;
+  }
+
+  h1 {
+    color: #28a745;
+    margin-bottom: 15px;
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+
+  .success-message {
+    color: #666;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+}
+
+.order-details {
+  background: #f8f9fa;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .value {
+      color: #333;
+      font-weight: 600;
+    }
+  }
+}
+
+.success-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+
+  .btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #0056b3;
+      transform: translateY(-2px);
+    }
+  }
+
+  .btn-secondary {
+    background: white;
+    color: #007bff;
+    border: 2px solid #007bff;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #007bff;
+      color: white;
+    }
+  }
+}
+
+.support-info {
+  border-top: 1px solid #e9ecef;
+  padding-top: 20px;
+
+  p {
+    color: #666;
+    margin: 5px 0;
+    font-size: 0.9rem;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (max-width: 768px) {
+  .success-card {
+    padding: 30px 20px;
+  }
+
+  .success-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+}

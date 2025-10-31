@@ -1,0 +1,13 @@
+@if (products.length > 0) {
+  <div class="products-grid">
+    @for (product of products; track product.id) {
+      <app-product-card [product]="product"></app-product-card>
+    }
+  </div>
+} @else {
+  <div class="no-products">
+    <div class="no-products-icon">🎵</div>
+    <h3>Không tìm thấy sản phẩm nào</h3>
+    <p>Hãy thử tìm kiếm với bộ lọc khác</p>
+  </div>
+}

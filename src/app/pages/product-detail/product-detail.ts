@@ -1,0 +1,185 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
+import { Product } from '../../interfaces/product';
+import { ProductService } from '../../services/product';
+import { AuthService } from '../../services/auth';
+import { CartService } from '../../services/cart';
+
+@Component({
+  selector: 'app-product-detail',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './product-detail.html',
+  styleUrls: ['./product-detail.scss']
+})
+export class ProductDetail implements OnInit {
+  product: Product | undefined;
+  selectedImage: string = '';
+  quantity: number = 1;
+  relatedProducts: Product[] = [];
+  isLoading: boolean = true;
+  activeTab: string = 'description'; // Thêm activeTab
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private productService: ProductService,
+    public authService: AuthService,
+    private cartService: CartService
+  ) {}
+
+  ngOnInit(): void {
+    this.route.params.subscribe(params => {
+      const productId = +params['id'];
+      this.loadProduct(productId);
+    });
+  }
+
+  loadProduct(productId: number): void {
+    this.isLoading = true;
+    this.productService.getProduct(productId).subscribe({
+      next: (product) => {
+        this.product = product;
+        if (product) {
+          this.selectedImage = product.image;
+          // Nếu có nhiều ảnh, sử dụng ảnh đầu tiên làm ảnh chính
+          if (product.images && product.images.length > 0) {
+            this.selectedImage = product.images[0];
+          }
+          this.loadRelatedProducts(product);
+        }
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error loading product:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadRelatedProducts(product: Product): void {
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.relatedProducts = products
+          .filter(p => p.id !== product.id && p.category === product.category)
+          .slice(0, 4);
+      },
+      error: (error: any) => {
+        console.error('Error loading related products:', error);
+      }
+    });
+  }
+
+  changeImage(image: string): void {
+    this.selectedImage = image;
+  }
+
+  increaseQuantity(): void {
+    this.quantity++;
+  }
+
+  decreaseQuantity(): void {
+    if (this.quantity > 1) {
+      this.quantity--;
+    }
+  }
+
+  addToCart(): void {
+    if (this.product) {
+      this.cartService.addToCart(this.product, this.quantity).subscribe({
+        next: () => {
+          alert('🎉 Đã thêm vào giỏ hàng!');
+        },
+        error: (error: any) => {
+          console.error('Error adding to cart:', error);
+          alert('❌ Có lỗi xảy ra khi thêm vào giỏ hàng!');
+        }
+      });
+    }
+  }
+
+  buyNow(): void {
+    if (this.product) {
+      this.cartService.addToCart(this.product, this.quantity).subscribe({
+        next: () => {
+          this.router.navigate(['/checkout']);
+        },
+        error: (error: any) => {
+          console.error('Error adding to cart:', error);
+          alert('❌ Có lỗi xảy ra! Vui lòng thử lại.');
+        }
+      });
+    }
+  }
+
+  addToWishlist(): void {
+    if (this.product) {
+      if (this.authService.isLoggedIn) {
+        this.authService.addToWishlist(this.product.id).subscribe({
+          next: (response: any) => {
+            if (response.success) {
+              alert('❤️ ' + response.message);
+            } else {
+              alert('ℹ️ ' + response.message);
+            }
+          },
+          error: (error: any) => {
+            console.error('Error adding to wishlist:', error);
+            alert('❌ Có lỗi xảy ra khi thêm vào wishlist!');
+          }
+        });
+      } else {
+        alert('🔐 Vui lòng đăng nhập để thêm vào danh sách yêu thích!');
+        this.router.navigate(['/login']);
+      }
+    }
+  }
+
+  isInWishlist(): boolean {
+    if (!this.authService.currentUserValue || !this.product) {
+      return false;
+    }
+    return this.authService.currentUserValue.wishlist?.includes(this.product.id) || false;
+  }
+
+  getDiscountPercent(): number {
+    if (!this.product?.originalPrice) return 0;
+    return Math.round(((this.product.originalPrice - this.product.price) / this.product.originalPrice) * 100);
+  }
+
+  // Thêm method getDiscount để fix lỗi template
+  getDiscount(): number {
+    return this.getDiscountPercent();
+  }
+
+  // Thêm method để hiển thị rating bằng sao
+  getStarRating(rating: number): string {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    
+    return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+  }
+
+  // Thêm method để chuyển tab
+  setActiveTab(tab: string): void {
+    this.activeTab = tab;
+  }
+
+  formatArray(items: string[] | undefined): string {
+    if (!items || items.length === 0) return '';
+    return items.join(', ');
+  }
+
+  hasSpec(spec: any): boolean {
+    return spec !== undefined && spec !== null && spec !== '';
+  }
+
+  // Method để hiển thị thông báo đặc biệt cho admin
+  showAdminNotice(): boolean {
+    return this.authService.isAdminSync();
+  }
+}

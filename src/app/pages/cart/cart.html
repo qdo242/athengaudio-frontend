@@ -1,0 +1,153 @@
+<div class="cart-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="page-header">
+      <h1>🛒 Giỏ Hàng Của Bạn</h1>
+      <p>Kiểm tra và chỉnh sửa sản phẩm trước khi thanh toán</p>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Đang tải giỏ hàng...</p>
+    </div>
+
+    <!-- Empty Cart -->
+    <div *ngIf="!isLoading && cartItems.length === 0" class="empty-cart">
+      <div class="empty-icon">📦</div>
+      <h2>Giỏ hàng của bạn đang trống</h2>
+      <p>Hãy khám phá và thêm những sản phẩm yêu thích vào giỏ hàng!</p>
+      <div class="empty-actions">
+        <button class="btn-primary" (click)="continueShopping()">
+          🎵 Khám phá sản phẩm
+        </button>
+        <button class="btn-secondary" routerLink="/products">
+          🔍 Xem tất cả sản phẩm
+        </button>
+      </div>
+    </div>
+
+    <!-- Cart Content -->
+    <div *ngIf="!isLoading && cartItems.length > 0" class="cart-content">
+      <div class="cart-layout">
+        <!-- Cart Items -->
+        <div class="cart-items-section">
+          <div class="section-header">
+            <h2>Sản phẩm ({{ cartItems.length }})</h2>
+            <button class="btn-clear" (click)="clearCart()">
+              🗑️ Xóa tất cả
+            </button>
+          </div>
+
+          <div class="cart-items">
+            <div *ngFor="let item of cartItems; let i = index" class="cart-item">
+              <div class="item-image">
+                <img [src]="item.product.image" [alt]="item.product.name" />
+                <div class="item-badge" *ngIf="item.product.originalPrice">
+                  -{{ ((item.product.originalPrice - item.product.price) / item.product.originalPrice * 100) | number:'1.0-0' }}%
+                </div>
+              </div>
+              
+              <div class="item-details">
+                <h3 class="item-name">{{ item.product.name }}</h3>
+                <p class="item-brand">{{ item.product.brand }}</p>
+                <div class="item-features">
+                  <span *ngFor="let feature of item.product.features?.slice(0, 2)" class="feature-tag">
+                    {{ feature }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="item-price">
+                <div class="current-price">{{ item.product.price | number }}₫</div>
+                <div class="original-price" *ngIf="item.product.originalPrice">
+                  {{ item.product.originalPrice | number }}₫
+                </div>
+              </div>
+
+              <div class="quantity-controls">
+                <button class="qty-btn" (click)="updateQuantity(item, item.quantity - 1)" 
+                        [disabled]="item.quantity <= 1">
+                  −
+                </button>
+                <span class="quantity">{{ item.quantity }}</span>
+                <button class="qty-btn" (click)="updateQuantity(item, item.quantity + 1)">
+                  +
+                </button>
+              </div>
+
+              <div class="item-total">
+                <div class="total-amount">{{ (item.product.price * item.quantity) | number }}₫</div>
+                <div class="unit-price">{{ item.product.price | number }}₫/sản phẩm</div>
+              </div>
+
+              <button class="remove-btn" (click)="removeItem(item.product.id)" title="Xóa sản phẩm">
+                <span class="remove-icon">×</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <div class="summary-card">
+            <h3>📋 Tóm tắt đơn hàng</h3>
+            
+            <div class="summary-details">
+              <div class="summary-row">
+                <span>Tạm tính:</span>
+                <span>{{ total | number }}₫</span>
+              </div>
+              
+              <div class="summary-row">
+                <span>Phí vận chuyển:</span>
+                <span class="free-shipping">Miễn phí</span>
+              </div>
+              
+              <div class="summary-row">
+                <span>Giảm giá:</span>
+                <span class="discount">-0₫</span>
+              </div>
+              
+              <div class="divider"></div>
+              
+              <div class="summary-row total">
+                <strong>Tổng thanh toán:</strong>
+                <strong class="total-amount">{{ total | number }}₫</strong>
+              </div>
+            </div>
+
+            <div class="shipping-info">
+              <div class="shipping-icon">🚚</div>
+              <div class="shipping-text">
+                <strong>Giao hàng miễn phí</strong>
+                <small>Cho đơn hàng từ 500.000₫</small>
+              </div>
+            </div>
+
+            <div class="checkout-actions">
+              <button class="btn-checkout" (click)="proceedToCheckout()">
+                🎉 Tiến hành thanh toán
+              </button>
+              
+              <button class="btn-continue" (click)="continueShopping()">
+                ← Tiếp tục mua sắm
+              </button>
+            </div>
+
+            <div class="security-badges">
+              <div class="badge">
+                <span class="badge-icon">🔒</span>
+                <span>Thanh toán an toàn</span>
+              </div>
+              <div class="badge">
+                <span class="badge-icon">🔄</span>
+                <span>Đổi trả 30 ngày</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

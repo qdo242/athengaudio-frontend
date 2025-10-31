@@ -1,0 +1,194 @@
+<div class="register-page">
+  <div class="container">
+    <div class="register-container">
+      <!-- Left Side - Form -->
+      <div class="register-form-section">
+        <div class="form-header">
+          <a routerLink="/" class="back-home">
+            ← Quay lại trang chủ
+          </a>
+          <h1 class="form-title">Đăng Ký Tài Khoản</h1>
+          <p class="form-subtitle">Tham gia cộng đồng Atheng Audio để trải nghiệm âm thanh đỉnh cao</p>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="register-form">
+          <!-- Full Name Field -->
+          <div class="form-group">
+            <label for="name" class="form-label">Họ và Tên</label>
+            <input
+              type="text"
+              id="name"
+              [(ngModel)]="userData.name"
+              name="name"
+              class="form-input"
+              placeholder="Nhập họ và tên của bạn"
+              required
+            >
+          </div>
+
+          <!-- Email Field -->
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input
+              type="email"
+              id="email"
+              [(ngModel)]="userData.email"
+              name="email"
+              class="form-input"
+              placeholder="Nhập địa chỉ email"
+              required
+            >
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label for="password" class="form-label">Mật Khẩu</label>
+            <input
+              type="password"
+              id="password"
+              [(ngModel)]="userData.password"
+              name="password"
+              class="form-input"
+              placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+              required
+            >
+          </div>
+
+          <!-- Confirm Password Field -->
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Xác Nhận Mật Khẩu</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              [(ngModel)]="userData.confirmPassword"
+              name="confirmPassword"
+              class="form-input"
+              placeholder="Nhập lại mật khẩu"
+              required
+            >
+          </div>
+
+          <!-- Terms Agreement -->
+          <div class="form-group terms-group">
+            <label class="terms-label">
+              <input
+                type="checkbox"
+                [(ngModel)]="userData.agreeToTerms"
+                name="agreeToTerms"
+                class="terms-checkbox"
+              >
+              <span class="terms-text">
+                Tôi đồng ý với 
+                <a href="#" class="terms-link">Điều khoản sử dụng</a> 
+                và 
+                <a href="#" class="terms-link">Chính sách bảo mật</a>
+                của Atheng Audio
+              </span>
+            </label>
+          </div>
+
+          <!-- Error Message -->
+          @if (errorMessage) {
+            <div class="error-message">
+              {{ errorMessage }}
+            </div>
+          }
+
+          <!-- Success Message -->
+          @if (successMessage) {
+            <div class="success-message">
+              {{ successMessage }}
+            </div>
+          }
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="register-btn"
+            [disabled]="isLoading"
+            [class.loading]="isLoading"
+          >
+            @if (isLoading) {
+              <span class="loading-spinner"></span>
+            }
+            {{ isLoading ? 'Đang đăng ký...' : 'Đăng Ký' }}
+          </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">
+          <span>Hoặc</span>
+        </div>
+
+        <!-- Social Register -->
+        <div class="social-register">
+          <button class="social-btn google-btn">
+            <span class="social-icon">🔍</span>
+            Đăng ký với Google
+          </button>
+          <button class="social-btn facebook-btn">
+            <span class="social-icon">📘</span>
+            Đăng ký với Facebook
+          </button>
+        </div>
+
+        <!-- Login Link -->
+        <div class="login-link">
+          <p>Đã có tài khoản? <a routerLink="/login" class="link">Đăng nhập ngay</a></p>
+        </div>
+      </div>
+
+      <!-- Right Side - Benefits -->
+      <div class="register-benefits">
+        <div class="benefits-content">
+          <h2>Lợi Ích Khi Tham Gia</h2>
+          
+          <div class="benefits-list">
+            <div class="benefit-item">
+              <div class="benefit-icon">🎁</div>
+              <div class="benefit-text">
+                <h3>Ưu Đãi Đặc Biệt</h3>
+                <p>Nhận các chương trình khuyến mãi dành riêng cho thành viên</p>
+              </div>
+            </div>
+
+            <div class="benefit-item">
+              <div class="benefit-icon">🚚</div>
+              <div class="benefit-text">
+                <h3>Miễn Phí Vận Chuyển</h3>
+                <p>Miễn phí giao hàng cho đơn hàng đầu tiên</p>
+              </div>
+            </div>
+
+            <div class="benefit-item">
+              <div class="benefit-icon">⭐</div>
+              <div class="benefit-text">
+                <h3>Tích Lũy Điểm Thưởng</h3>
+                <p>Tích điểm cho mỗi giao dịch và đổi quà hấp dẫn</p>
+              </div>
+            </div>
+
+            <div class="benefit-item">
+              <div class="benefit-icon">🔔</div>
+              <div class="benefit-text">
+                <h3>Thông Báo Sớm Nhất</h3>
+                <p>Nhận thông báo đầu tiên về sản phẩm mới và khuyến mãi</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial">
+            <div class="testimonial-text">
+              "Atheng Audio đã mang đến cho tôi trải nghiệm âm thanh tuyệt vời. 
+              Sản phẩm chất lượng và dịch vụ hỗ trợ rất chuyên nghiệp!"
+            </div>
+            <div class="testimonial-author">
+              <strong>Nguyễn Văn A</strong>
+              <span>Khách hàng thân thiết</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

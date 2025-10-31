@@ -1,0 +1,341 @@
+<div class="admin-page">
+  <div class="container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <h1 class="page-title">Quản Lý Atheng Audio</h1>
+      <div class="admin-actions">
+        @if (activeTab === 'products') {
+          <button class="btn btn-secondary" (click)="addProduct()">
+            + Thêm Sản Phẩm
+          </button>
+        }
+        <button class="btn btn-secondary" routerLink="/">
+          ← Về Trang Chủ
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Stats -->
+    <div class="admin-stats">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.totalProducts }}</div>
+          <div class="stat-label">Tổng Sản Phẩm</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛒</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.totalOrders }}</div>
+          <div class="stat-label">Đơn Hàng</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.totalRevenue | number }}₫</div>
+          <div class="stat-label">Doanh Thu</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-info">
+          <div class="stat-number">{{ stats.outOfStock }}</div>
+          <div class="stat-label">Hết Hàng</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Tabs -->
+    <div class="admin-tabs">
+      <div class="tab-headers">
+        <button 
+          class="tab-header" 
+          [class.active]="activeTab === 'products'"
+          (click)="setActiveTab('products')"
+        >
+          📦 Quản Lý Sản Phẩm
+        </button>
+        <button 
+          class="tab-header" 
+          [class.active]="activeTab === 'orders'"
+          (click)="setActiveTab('orders')"
+        >
+          🛒 Quản Lý Đơn Hàng
+        </button>
+      </div>
+
+      <div class="tab-content">
+        <!-- Products Tab -->
+        @if (activeTab === 'products') {
+          <div class="tab-pane">
+            <!-- Product List -->
+            <div class="products-table">
+              <div class="table-header">
+                <h3>Danh Sách Sản Phẩm ({{ products.length }})</h3>
+              </div>
+              
+              <div class="table-content">
+                <div class="table-row header-row">
+                  <div class="col col-image">Hình Ảnh</div>
+                  <div class="col col-name">Tên Sản Phẩm</div>
+                  <div class="col col-price">Giá</div>
+                  <div class="col col-category">Danh Mục</div>
+                  <div class="col col-stock">Tình Trạng</div>
+                  <div class="col col-actions">Thao Tác</div>
+                </div>
+
+                @for (product of products; track product.id) {
+                  <div class="table-row">
+                    <div class="col col-image">
+                      <img [src]="product.image" [alt]="product.name" class="product-thumb">
+                    </div>
+                    <div class="col col-name">
+                      <div class="product-name">{{ product.name }}</div>
+                      <div class="product-brand">{{ product.brand }}</div>
+                    </div>
+                    <div class="col col-price">
+                      <div class="current-price">{{ product.price | number }}₫</div>
+                      @if (product.originalPrice) {
+                        <div class="original-price">{{ product.originalPrice | number }}₫</div>
+                      }
+                    </div>
+                    <div class="col col-category">
+                      <span class="category-badge">{{ product.category }}</span>
+                    </div>
+                    <div class="col col-stock">
+                      @if (product.inStock) {
+                        <span class="status-badge in-stock">Còn Hàng</span>
+                      } @else {
+                        <span class="status-badge out-of-stock">Hết Hàng</span>
+                      }
+                    </div>
+                    <div class="col col-actions">
+                      <button class="btn-edit" (click)="editProduct(product)">
+                        ✏️ Sửa
+                      </button>
+                      <button class="btn-delete" (click)="deleteProduct(product.id)">
+                        🗑️ Xóa
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Orders Tab -->
+        @if (activeTab === 'orders') {
+          <div class="tab-pane">
+            <!-- Orders List -->
+            <div class="orders-table">
+              <div class="table-header">
+                <h3>Danh Sách Đơn Hàng ({{ orders.length }})</h3>
+              </div>
+              
+              <div class="table-content">
+                <div class="table-row header-row">
+                  <div class="col col-id">Mã ĐH</div>
+                  <div class="col col-customer">Khách Hàng</div>
+                  <div class="col col-items">Sản Phẩm</div>
+                  <div class="col col-total">Tổng Tiền</div>
+                  <div class="col col-status">Trạng Thái</div>
+                  <div class="col col-date">Ngày Đặt</div>
+                  <div class="col col-actions">Thao Tác</div>
+                </div>
+
+                @for (order of orders; track order.id) {
+                  <div class="table-row">
+                    <div class="col col-id">
+                      #{{ order.id }}
+                    </div>
+                    <div class="col col-customer">
+                      <div class="customer-name">{{ order.customer.fullName }}</div>
+                      <div class="customer-phone">{{ order.customer.phone }}</div>
+                    </div>
+                    <div class="col col-items">
+                      <div class="items-count">{{ order.items.length }} sản phẩm</div>
+                      <div class="items-preview">
+                        @for (item of order.items.slice(0, 2); track item.product.id) {
+                          <span class="item-name">{{ item.product.name }}</span>
+                        }
+                        @if (order.items.length > 2) {
+                          <span class="more-items">+{{ order.items.length - 2 }} sản phẩm khác</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="col col-total">
+                      {{ order.total | number }}₫
+                    </div>
+                    <div class="col col-status">
+                      <select 
+                            [value]="order.status" 
+                            (change)="updateOrderStatus(order.id, $event)"
+                            class="status-select"
+                            [style.background]="getStatusColor(order.status)"
+                        >
+                        <option value="pending">Chờ xử lý</option>
+                        <option value="completed">Hoàn thành</option>
+                        <option value="cancelled">Đã hủy</option>
+                      </select>
+                    </div>
+                    <div class="col col-date">
+                      {{ order.createdAt | date:'dd/MM/yyyy' }}
+                    </div>
+                    <div class="col col-actions">
+                      <button class="btn-view" (click)="viewOrder(order.id)">
+                        👁️ Xem
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                @if (orders.length === 0) {
+                  <div class="empty-state">
+                    <div class="empty-icon">🛒</div>
+                    <h3>Chưa có đơn hàng nào</h3>
+                    <p>Các đơn hàng sẽ xuất hiện ở đây khi khách hàng đặt hàng</p>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Product Form Modal -->
+    @if (showProductForm) {
+      <div class="modal-overlay">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>{{ editingProduct ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới' }}</h2>
+            <button class="modal-close" (click)="showProductForm = false">×</button>
+          </div>
+
+          <div class="modal-body">
+            <form (ngSubmit)="saveProduct()" class="product-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Tên Sản Phẩm *</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="productForm.name"
+                    name="name"
+                    class="form-input"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Giá Hiện Tại *</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="productForm.price"
+                    name="price"
+                    class="form-input"
+                    required
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Giá Gốc</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="productForm.originalPrice"
+                    name="originalPrice"
+                    class="form-input"
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Danh Mục</label>
+                  <select
+                    [(ngModel)]="productForm.category"
+                    name="category"
+                    class="form-input"
+                  >
+                    <option value="headphone">Tai Nghe Headphone</option>
+                    <option value="earbuds">Tai Nghe True Wireless</option>
+                    <option value="gaming">Tai Nghe Gaming</option>
+                    <option value="studio">Tai Nghe Studio</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Thương Hiệu</label>
+                  <input
+                    type="text"
+                    [(ngModel)]="productForm.brand"
+                    name="brand"
+                    class="form-input"
+                  >
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Mô Tả</label>
+                  <textarea
+                    [(ngModel)]="productForm.description"
+                    name="description"
+                    class="form-input"
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Tính Năng</label>
+                  <div class="features-list">
+                    @for (feature of productForm.features; track $index) {
+                      <div class="feature-input-group">
+                        <input
+                          type="text"
+                          [(ngModel)]="productForm.features[$index]"
+                          [name]="'feature' + $index"
+                          class="form-input"
+                          placeholder="Tính năng sản phẩm"
+                        >
+                        <button
+                          type="button"
+                          class="remove-feature-btn"
+                          (click)="removeFeature($index)"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    }
+                    <button type="button" class="add-feature-btn" (click)="addFeature()">
+                      + Thêm Tính Năng
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="productForm.inStock"
+                      name="inStock"
+                    >
+                    <span class="checkmark"></span>
+                    Còn Hàng
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="showProductForm = false">
+                  Hủy
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  {{ editingProduct ? 'Cập Nhật' : 'Thêm Sản Phẩm' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
