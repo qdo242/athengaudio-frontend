@@ -2,14 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ProductsGrid } from '../../components/products-grid/products-grid';
 import { Product } from '../../interfaces/product';
 import { ProductService } from '../../services/product';
-
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, FormsModule,RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './products.html',
   styleUrl: './products.scss',
 })
@@ -35,8 +33,7 @@ export class Products implements OnInit {
 
   connectivityOptions = [
     { value: 'wireless', label: 'Không dây' },
-    { value: 'wired', label: 'Có dây' },
-    { value: 'both', label: 'Cả hai' }
+    { value: 'wired', label: 'Có dây' }
   ];
 
   constructor(private productService: ProductService) {}
@@ -48,10 +45,17 @@ export class Products implements OnInit {
   loadProducts(): void {
     this.isLoading = true;
     
-    this.productService.getProducts().subscribe({
+    this.productService.getAllProducts().subscribe({
       next: (products) => {
-        this.products = products;
-        this.filteredProducts = products;
+        this.products = products.map(product => ({
+          ...product,
+          image: product.image || 'assets/images/default-product.png',
+          inStock: product.stock > 0,
+          rating: product.rating || 4.5,
+          reviews: product.reviews || 0,
+          features: product.features || ['Chất lượng cao', 'Bảo hành chính hãng']
+        }));
+        this.filteredProducts = this.products;
         this.isLoading = false;
       },
       error: (error) => {
@@ -118,7 +122,6 @@ export class Products implements OnInit {
     this.showMobileFilters = !this.showMobileFilters;
   }
 
-  // Helper methods for template
   getCategoryLabel(categoryValue: string): string {
     const category = this.categories.find(c => c.value === categoryValue);
     return category ? category.label : categoryValue;
@@ -127,8 +130,7 @@ export class Products implements OnInit {
   getConnectivityLabel(connectivity: string): string {
     const connectivityMap: {[key: string]: string} = {
       'wireless': 'Không dây',
-      'wired': 'Có dây', 
-      'both': 'Cả hai'
+      'wired': 'Có dây'
     };
     return connectivityMap[connectivity] || connectivity;
   }

@@ -52,7 +52,7 @@ export class Cart implements OnInit, OnDestroy {
 
   calculateTotal(): void {
     this.total = this.cartItems.reduce((sum, item) => {
-      return sum + (item.product.price * item.quantity);
+      return sum + (item.price * item.quantity);
     }, 0);
   }
 
@@ -61,7 +61,7 @@ export class Cart implements OnInit, OnDestroy {
       newQuantity = 1;
     }
     
-    this.cartService.updateQuantity(item.product.id, newQuantity).subscribe({
+    this.cartService.updateQuantityFrontend(Number(item.productId), newQuantity).subscribe({
       next: () => {
         this.calculateTotal();
       },
@@ -72,11 +72,11 @@ export class Cart implements OnInit, OnDestroy {
     });
   }
 
-  removeItem(productId: number): void {
+  removeItem(productId: string): void {
     if (confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-      this.cartService.removeFromCart(productId).subscribe({
+      this.cartService.removeFromCartFrontend(Number(productId)).subscribe({
         next: () => {
-          // Cart items sẽ tự động cập nhật qua subscription
+          // Cart items will auto-update via subscription
         },
         error: (error: any) => {
           console.error('Error removing item:', error);
@@ -88,7 +88,7 @@ export class Cart implements OnInit, OnDestroy {
 
   clearCart(): void {
     if (confirm('Bạn có chắc muốn xóa tất cả sản phẩm trong giỏ hàng?')) {
-      this.cartService.clearCart().subscribe({
+      this.cartService.clearCartFrontend().subscribe({
         next: () => {
           this.cartItems = [];
           this.total = 0;
@@ -118,5 +118,9 @@ export class Cart implements OnInit, OnDestroy {
 
   continueShopping(): void {
     this.router.navigate(['/products']);
+  }
+
+  getItemTotal(item: CartItem): number {
+    return item.price * item.quantity;
   }
 }

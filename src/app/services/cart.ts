@@ -1,121 +1,151 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { Product } from '../interfaces/product';
 
 export interface CartItem {
-  product: Product;
+  productId: string;
+  productName: string;
+  price: number;
   quantity: number;
+  subTotal?: number;
+}
+
+export interface Cart {
+  id?: string;
+  userId: string;
+  items: CartItem[];
+  totalAmount: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private readonly CART_KEY = 'cart';
-  private cartItemsSubject = new BehaviorSubject<CartItem[]>(this.getCartFromStorage());
+  private apiUrl = 'http://localhost:8080/api/carts';
+  private cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
   public cartItems$ = this.cartItemsSubject.asObservable();
 
+  constructor(private http: HttpClient) {}
+
+  // Kết nối với Spring Boot API
+  getCartByUser(userId: string): Observable<Cart> {
+    return this.http.get<Cart>(`${this.apiUrl}/user/${userId}`);
+  }
+
+  addToCart(userId: string, item: CartItem): Observable<Cart> {
+    return this.http.post<Cart>(`${this.apiUrl}/user/${userId}/items`, item);
+  }
+
+  updateQuantity(userId: string, productId: string, quantity: number): Observable<Cart> {
+    return this.http.put<Cart>(`${this.apiUrl}/user/${userId}/items/${productId}?quantity=${quantity}`, {});
+  }
+
+  removeFromCart(userId: string, productId: string): Observable<Cart> {
+    return this.http.delete<Cart>(`${this.apiUrl}/user/${userId}/items/${productId}`);
+  }
+
+  clearCart(userId: string): Observable<Cart> {
+    return this.http.delete<Cart>(`${this.apiUrl}/user/${userId}/clear`);
+  }
+
+  // Các method cho frontend
   getCartItems(): Observable<CartItem[]> {
     return this.cartItems$;
   }
 
-  addToCart(product: Product, quantity: number = 1): Observable<void> {
+  addToCartFrontend(product: Product, quantity: number = 1, userId: string = 'user123'): Observable<void> {
+    const cartItem: CartItem = {
+      productId: product.id?.toString() || '',
+      productName: product.name,
+      price: product.price,
+      quantity: quantity,
+      subTotal: product.price * quantity
+    };
+
     return new Observable(observer => {
-      try {
-        const cartItems = this.getCartFromStorage();
-        const existingItem = cartItems.find(item => item.product.id === product.id);
-        
-        if (existingItem) {
-          existingItem.quantity += quantity;
-        } else {
-          cartItems.push({
-            product: product,
-            quantity: quantity
-          });
-        }
-        
-        this.saveCartToStorage(cartItems);
-        this.cartItemsSubject.next(cartItems);
-        observer.next();
-        observer.complete();
-      } catch (error) {
-        observer.error(error);
-      }
+      this.addToCart(userId, cartItem).subscribe({
+        next: (cart) => {
+          this.cartItemsSubject.next(cart.items);
+          observer.next();
+          observer.complete();
+        },
+        error: (error) => observer.error(error)
+      });
     });
   }
 
-  removeFromCart(productId: number): Observable<void> {
+  removeFromCartFrontend(productId: number, userId: string = 'user123'): Observable<void> {
     return new Observable(observer => {
-      try {
-        let cartItems = this.getCartFromStorage();
-        cartItems = cartItems.filter(item => item.product.id !== productId);
-        this.saveCartToStorage(cartItems);
-        this.cartItemsSubject.next(cartItems);
-        observer.next();
-        observer.complete();
-      } catch (error) {
-        observer.error(error);
-      }
+      this.removeFromCart(userId, productId.toString()).subscribe({
+        next: (cart) => {
+          this.cartItemsSubject.next(cart.items);
+          observer.next();
+          observer.complete();
+        },
+        error: (error) => observer.error(error)
+      });
     });
   }
 
-  updateQuantity(productId: number, quantity: number): Observable<void> {
+  updateQuantityFrontend(productId: number, quantity: number, userId: string = 'user123'): Observable<void> {
     return new Observable(observer => {
-      try {
-        const cartItems = this.getCartFromStorage();
-        const item = cartItems.find(item => item.product.id === productId);
-        
-        if (item) {
-          item.quantity = quantity;
-          this.saveCartToStorage(cartItems);
-          this.cartItemsSubject.next(cartItems);
-        }
-        
-        observer.next();
-        observer.complete();
-      } catch (error) {
-        observer.error(error);
-      }
+      this.updateQuantity(userId, productId.toString(), quantity).subscribe({
+        next: (cart) => {
+          this.cartItemsSubject.next(cart.items);
+          observer.next();
+          observer.complete();
+        },
+        error: (error) => observer.error(error)
+      });
     });
   }
 
-  clearCart(): Observable<void> {
+  clearCartFrontend(userId: string = 'user123'): Observable<void> {
     return new Observable(observer => {
-      try {
-        localStorage.removeItem(this.CART_KEY);
-        this.cartItemsSubject.next([]);
-        observer.next();
-        observer.complete();
-      } catch (error) {
-        observer.error(error);
-      }
+      this.clearCart(userId).subscribe({
+        next: () => {
+          this.cartItemsSubject.next([]);
+          observer.next();
+          observer.complete();
+        },
+        error: (error) => observer.error(error)
+      });
     });
   }
 
   getCartTotal(): Observable<number> {
-    const cartItems = this.getCartFromStorage();
-    const total = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-    return of(total);
+    return new Observable(observer => {
+      this.cartItems$.subscribe(items => {
+        const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        observer.next(total);
+      });
+    });
   }
 
   getCartItemCount(): Observable<number> {
-    const cartItems = this.getCartFromStorage();
-    const count = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    return of(count);
+    return new Observable(observer => {
+      this.cartItems$.subscribe(items => {
+        const count = items.reduce((sum, item) => sum + item.quantity, 0);
+        observer.next(count);
+      });
+    });
   }
 
-  // Method sync để lấy số lượng item (dùng trong header)
   getCartItemCountSync(): number {
-    const cartItems = this.getCartFromStorage();
-    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    const items = this.cartItemsSubject.value;
+    return items.reduce((sum, item) => sum + item.quantity, 0);
   }
 
-  private getCartFromStorage(): CartItem[] {
-    const cartData = localStorage.getItem(this.CART_KEY);
-    return cartData ? JSON.parse(cartData) : [];
-  }
-
-  private saveCartToStorage(cartItems: CartItem[]): void {
-    localStorage.setItem(this.CART_KEY, JSON.stringify(cartItems));
+  loadCartForUser(userId: string = 'user123'): void {
+    this.getCartByUser(userId).subscribe({
+      next: (cart) => {
+        this.cartItemsSubject.next(cart.items);
+      },
+      error: (error) => {
+        console.error('Error loading cart:', error);
+        this.cartItemsSubject.next([]);
+      }
+    });
   }
 }

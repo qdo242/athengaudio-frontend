@@ -21,7 +21,7 @@ export class ProductDetail implements OnInit {
   quantity: number = 1;
   relatedProducts: Product[] = [];
   isLoading: boolean = true;
-  activeTab: string = 'description'; // Thêm activeTab
+  activeTab: string = 'description';
 
   constructor(
     private route: ActivatedRoute,
@@ -33,23 +33,28 @@ export class ProductDetail implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      const productId = +params['id'];
+      const productId = params['id'];
       this.loadProduct(productId);
     });
   }
 
-  loadProduct(productId: number): void {
+  loadProduct(productId: string): void {
     this.isLoading = true;
-    this.productService.getProduct(productId).subscribe({
+    this.productService.getProductById(productId).subscribe({
       next: (product) => {
-        this.product = product;
-        if (product) {
-          this.selectedImage = product.image;
-          // Nếu có nhiều ảnh, sử dụng ảnh đầu tiên làm ảnh chính
-          if (product.images && product.images.length > 0) {
-            this.selectedImage = product.images[0];
-          }
-          this.loadRelatedProducts(product);
+        this.product = {
+          ...product,
+          image: product.image || 'assets/images/default-product.png',
+          inStock: product.stock > 0,
+          rating: product.rating || 4.5,
+          reviews: product.reviews || 0,
+          features: product.features || ['Chất lượng cao', 'Bảo hành chính hãng'],
+          images: product.images || [product.image || 'assets/images/default-product.png']
+        };
+        
+        if (this.product) {
+          this.selectedImage = this.product.images?.[0] || this.product.image || '';
+          this.loadRelatedProducts(this.product);
         }
         this.isLoading = false;
       },
@@ -61,11 +66,16 @@ export class ProductDetail implements OnInit {
   }
 
   loadRelatedProducts(product: Product): void {
-    this.productService.getProducts().subscribe({
+    this.productService.getProductsByCategory(product.category).subscribe({
       next: (products) => {
         this.relatedProducts = products
-          .filter(p => p.id !== product.id && p.category === product.category)
-          .slice(0, 4);
+          .filter(p => p.id !== product.id)
+          .slice(0, 4)
+          .map(p => ({
+            ...p,
+            image: p.image || 'assets/images/default-product.png',
+            inStock: p.stock > 0
+          }));
       },
       error: (error: any) => {
         console.error('Error loading related products:', error);
@@ -89,7 +99,7 @@ export class ProductDetail implements OnInit {
 
   addToCart(): void {
     if (this.product) {
-      this.cartService.addToCart(this.product, this.quantity).subscribe({
+      this.cartService.addToCartFrontend(this.product, this.quantity).subscribe({
         next: () => {
           alert('🎉 Đã thêm vào giỏ hàng!');
         },
@@ -103,9 +113,9 @@ export class ProductDetail implements OnInit {
 
   buyNow(): void {
     if (this.product) {
-      this.cartService.addToCart(this.product, this.quantity).subscribe({
+      this.cartService.addToCartFrontend(this.product, this.quantity).subscribe({
         next: () => {
-          this.router.navigate(['/checkout']);
+          this.router.navigate(['/cart']);
         },
         error: (error: any) => {
           console.error('Error adding to cart:', error);
@@ -116,9 +126,9 @@ export class ProductDetail implements OnInit {
   }
 
   addToWishlist(): void {
-    if (this.product) {
+    if (this.product && this.product.id) {
       if (this.authService.isLoggedIn) {
-        this.authService.addToWishlist(this.product.id).subscribe({
+        this.authService.addToWishlist(Number(this.product.id)).subscribe({
           next: (response: any) => {
             if (response.success) {
               alert('❤️ ' + response.message);
@@ -139,10 +149,10 @@ export class ProductDetail implements OnInit {
   }
 
   isInWishlist(): boolean {
-    if (!this.authService.currentUserValue || !this.product) {
+    if (!this.authService.currentUserValue || !this.product?.id) {
       return false;
     }
-    return this.authService.currentUserValue.wishlist?.includes(this.product.id) || false;
+    return this.authService.currentUserValue.wishlist?.includes(Number(this.product.id)) || false;
   }
 
   getDiscountPercent(): number {
@@ -150,12 +160,10 @@ export class ProductDetail implements OnInit {
     return Math.round(((this.product.originalPrice - this.product.price) / this.product.originalPrice) * 100);
   }
 
-  // Thêm method getDiscount để fix lỗi template
   getDiscount(): number {
     return this.getDiscountPercent();
   }
 
-  // Thêm method để hiển thị rating bằng sao
   getStarRating(rating: number): string {
     const fullStars = Math.floor(rating);
     const halfStar = rating % 1 >= 0.5;
@@ -164,7 +172,6 @@ export class ProductDetail implements OnInit {
     return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
   }
 
-  // Thêm method để chuyển tab
   setActiveTab(tab: string): void {
     this.activeTab = tab;
   }
@@ -178,7 +185,6 @@ export class ProductDetail implements OnInit {
     return spec !== undefined && spec !== null && spec !== '';
   }
 
-  // Method để hiển thị thông báo đặc biệt cho admin
   showAdminNotice(): boolean {
     return this.authService.isAdminSync();
   }

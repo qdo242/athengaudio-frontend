@@ -9,291 +9,518 @@
       <span class="current" *ngIf="product">{{ product.name }}</span>
     </div>
 
-    @if (product) {
-      <div class="product-detail">
-        <!-- Product Images & Info -->
-        <div class="product-main">
-          <!-- Product Images -->
-          <div class="product-images">
-            <div class="main-image">
-              <img [src]="selectedImage" [alt]="product.name" class="product-image">
-              @if (product.originalPrice) {
-                <div class="discount-badge">
-                  -{{ getDiscount() }}%
-                </div>
-              }
-              @if (!product.inStock) {
-                <div class="out-of-stock-overlay">
-                  <span>Hết Hàng</span>
-                </div>
-              }
-            </div>
-            
-            <div class="image-thumbnails">
-              <div 
-                class="thumbnail" 
-                [class.active]="selectedImage === product.image"
-                (click)="changeImage(product.image)"
-              >
-                <img [src]="product.image" [alt]="product.name">
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Đang tải thông tin sản phẩm...</p>
+    </div>
+
+    <div *ngIf="!isLoading && product" class="product-detail">
+      <!-- Product Images & Info -->
+      <div class="product-main">
+        <!-- Product Images -->
+        <div class="product-images">
+          <div class="main-image">
+            <img [src]="selectedImage" [alt]="product.name" class="product-image">
+            <div class="image-badges">
+              <div *ngIf="product.originalPrice" class="discount-badge">
+                -{{ getDiscount() }}%
               </div>
-              <!-- Có thể thêm nhiều ảnh khác ở đây -->
+              <div *ngIf="!product.inStock" class="out-of-stock-badge">
+                Hết Hàng
+              </div>
+              <div *ngIf="product.inStock && product.stock < 10" class="low-stock-badge">
+                Sắp hết hàng
+              </div>
             </div>
           </div>
-
-          <!-- Product Info -->
-          <div class="product-info">
-            <div class="product-header">
-              <h1 class="product-title">{{ product.name }}</h1>
-              <div class="product-meta">
-                <span class="product-brand">Thương hiệu: {{ product.brand }}</span>
-                <span class="product-sku">Mã SP: #{{ product.id }}</span>
-              </div>
-            </div>
-
-            <!-- Rating -->
-            <div class="product-rating">
-              <div class="rating-stars">
-                <span class="stars">{{ getStarRating(product.rating) }}</span>
-                <span class="rating-value">{{ product.rating }}/5</span>
-              </div>
-              <span class="reviews-count">({{ product.reviews }} đánh giá)</span>
-            </div>
-
-            <!-- Price -->
-            <div class="product-price">
-              <span class="current-price">{{ product.price | number }}₫</span>
-              @if (product.originalPrice) {
-                <span class="original-price">{{ product.originalPrice | number }}₫</span>
-              }
-            </div>
-
-            <!-- Short Description -->
-            <div class="product-short-desc">
-              <p>{{ product.description }}</p>
-            </div>
-
-            <!-- Features -->
-            <div class="product-features">
-              <h3>Đặc điểm nổi bật:</h3>
-              <ul class="features-list">
-                @for (feature of product.features; track feature) {
-                  <li class="feature-item">✓ {{ feature }}</li>
-                }
-              </ul>
-            </div>
-
-            <!-- Quantity & Actions -->
-            <div class="product-actions">
-              <div class="quantity-selector">
-                <label class="quantity-label">Số lượng:</label>
-                <div class="quantity-controls">
-                  <button 
-                    class="quantity-btn" 
-                    (click)="decreaseQuantity()"
-                    [disabled]="quantity <= 1"
-                  >
-                    −
-                  </button>
-                  <span class="quantity-display">{{ quantity }}</span>
-                  <button 
-                    class="quantity-btn" 
-                    (click)="increaseQuantity()"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              <div class="action-buttons">
-                <button 
-                  class="btn btn-secondary add-to-cart-btn"
-                  (click)="addToCart()"
-                  [disabled]="!product.inStock"
-                >
-                  🛒 Thêm Vào Giỏ
-                </button>
-                <button 
-                  class="btn btn-primary buy-now-btn"
-                  (click)="buyNow()"
-                  [disabled]="!product.inStock"
-                >
-                  Mua Ngay
-                </button>
-              </div>
-            </div>
-
-            <!-- Product Meta -->
-            <div class="product-meta-info">
-              <div class="meta-item">
-                <span class="meta-icon">🚚</span>
-                <div class="meta-text">
-                  <strong>Giao hàng miễn phí</strong>
-                  <span>Cho đơn hàng từ 500K</span>
-                </div>
-              </div>
-              <div class="meta-item">
-                <span class="meta-icon">🔒</span>
-                <div class="meta-text">
-                  <strong>Bảo hành 2 năm</strong>
-                  <span>Chính hãng toàn quốc</span>
-                </div>
-              </div>
-              <div class="meta-item">
-                <span class="meta-icon">🔄</span>
-                <div class="meta-text">
-                  <strong>Đổi trả 30 ngày</strong>
-                  <span>Hoàn tiền 100%</span>
-                </div>
-              </div>
+          
+          <div class="image-thumbnails" *ngIf="product.images && product.images.length > 1">
+            <div 
+              *ngFor="let image of product.images" 
+              class="thumbnail" 
+              [class.active]="selectedImage === image"
+              (click)="changeImage(image)"
+            >
+              <img [src]="image" [alt]="product.name">
             </div>
           </div>
         </div>
 
-        <!-- Product Tabs -->
-        <div class="product-tabs">
-          <div class="tab-headers">
-            <button 
-              class="tab-header" 
-              [class.active]="activeTab === 'description'"
-              (click)="setActiveTab('description')"
-            >
-              Mô Tả Sản Phẩm
-            </button>
-            <button 
-              class="tab-header" 
-              [class.active]="activeTab === 'specs'"
-              (click)="setActiveTab('specs')"
-            >
-              Thông Số Kỹ Thuật
-            </button>
-            <button 
-              class="tab-header" 
-              [class.active]="activeTab === 'reviews'"
-              (click)="setActiveTab('reviews')"
-            >
-              Đánh Giá ({{ product.reviews }})
-            </button>
+        <!-- Product Info -->
+        <div class="product-info">
+          <div class="product-header">
+            <h1 class="product-title">{{ product.name }}</h1>
+            <div class="product-meta">
+              <span class="product-brand">Thương hiệu: {{ product.brand }}</span>
+              <span class="product-sku">Mã SP: #{{ product.id }}</span>
+              <span class="product-stock" [class.in-stock]="product.inStock" [class.out-of-stock]="!product.inStock">
+                {{ product.inStock ? 'Còn hàng' : 'Hết hàng' }}
+              </span>
+            </div>
           </div>
 
-          <div class="tab-content">
-            @if (activeTab === 'description') {
-              <div class="tab-pane">
-                <h3>Chi Tiết Sản Phẩm</h3>
-                <p>{{ product.description }}</p>
-                <div class="detailed-features">
-                  <h4>Tính năng chi tiết:</h4>
+          <!-- Rating -->
+          <div class="product-rating">
+            <div class="rating-stars">
+              <span class="stars">{{ getStarRating(product.rating || 0) }}</span>
+              <span class="rating-value">{{ product.rating }}/5</span>
+            </div>
+            <span class="reviews-count">({{ product.reviews }} đánh giá)</span>
+            <a href="#" class="write-review">Viết đánh giá</a>
+          </div>
+
+          <!-- Price -->
+          <div class="product-price">
+            <span class="current-price">{{ product.price | number }}₫</span>
+            <span *ngIf="product.originalPrice" class="original-price">
+              {{ product.originalPrice | number }}₫
+            </span>
+            <span *ngIf="product.originalPrice" class="discount-amount">
+              Tiết kiệm: {{ (product.originalPrice - product.price) | number }}₫
+            </span>
+          </div>
+
+          <!-- Short Description -->
+          <div class="product-short-desc">
+            <p>{{ product.description }}</p>
+          </div>
+
+          <!-- Features -->
+          <div class="product-features" *ngIf="product.features && product.features.length > 0">
+            <h3>Đặc điểm nổi bật:</h3>
+            <ul class="features-list">
+              <li *ngFor="let feature of product.features" class="feature-item">
+                <span class="feature-icon">✓</span>
+                {{ feature }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Quantity & Actions -->
+          <div class="product-actions">
+            <div class="quantity-selector">
+              <label class="quantity-label">Số lượng:</label>
+              <div class="quantity-controls">
+                <button 
+                  class="quantity-btn" 
+                  (click)="decreaseQuantity()"
+                  [disabled]="quantity <= 1"
+                >
+                  −
+                </button>
+                <span class="quantity-display">{{ quantity }}</span>
+                <button 
+                  class="quantity-btn" 
+                  (click)="increaseQuantity()"
+                  [disabled]="!product.inStock"
+                >
+                  +
+                </button>
+              </div>
+              <span class="stock-info" *ngIf="product.inStock">
+                {{ product.stock }} sản phẩm có sẵn
+              </span>
+            </div>
+
+            <div class="action-buttons">
+              <button 
+                class="btn btn-secondary add-to-cart-btn"
+                (click)="addToCart()"
+                [disabled]="!product.inStock"
+              >
+                <span class="btn-icon">🛒</span>
+                Thêm Vào Giỏ
+              </button>
+              <button 
+                class="btn btn-primary buy-now-btn"
+                (click)="buyNow()"
+                [disabled]="!product.inStock"
+              >
+                <span class="btn-icon">⚡</span>
+                Mua Ngay
+              </button>
+              <button 
+                class="btn btn-wishlist"
+                (click)="addToWishlist()"
+                [class.in-wishlist]="isInWishlist()"
+                title="Thêm vào yêu thích"
+              >
+                <span class="btn-icon">{{ isInWishlist() ? '❤️' : '🤍' }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Product Meta -->
+          <div class="product-meta-info">
+            <div class="meta-item">
+              <span class="meta-icon">🚚</span>
+              <div class="meta-text">
+                <strong>Giao hàng miễn phí</strong>
+                <span>Cho đơn hàng từ 500K</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">🔒</span>
+              <div class="meta-text">
+                <strong>Bảo hành {{ product.warranty || '2 năm' }}</strong>
+                <span>Chính hãng toàn quốc</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">🔄</span>
+              <div class="meta-text">
+                <strong>Đổi trả 30 ngày</strong>
+                <span>Hoàn tiền 100%</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">📞</span>
+              <div class="meta-text">
+                <strong>Hỗ trợ 24/7</strong>
+                <span>1900 1234</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin Notice -->
+          <div *ngIf="showAdminNotice()" class="admin-notice">
+            <div class="admin-icon">👑</div>
+            <div class="admin-text">
+              <strong>Chế độ Quản trị viên</strong>
+              <span>Bạn có thể chỉnh sửa thông tin sản phẩm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Tabs -->
+      <div class="product-tabs">
+        <div class="tab-headers">
+          <button 
+            class="tab-header" 
+            [class.active]="activeTab === 'description'"
+            (click)="setActiveTab('description')"
+          >
+            📖 Mô Tả Sản Phẩm
+          </button>
+          <button 
+            class="tab-header" 
+            [class.active]="activeTab === 'specs'"
+            (click)="setActiveTab('specs')"
+          >
+            ⚙️ Thông Số Kỹ Thuật
+          </button>
+          <button 
+            class="tab-header" 
+            [class.active]="activeTab === 'reviews'"
+            (click)="setActiveTab('reviews')"
+          >
+            ⭐ Đánh Giá ({{ product.reviews }})
+          </button>
+          <button 
+            class="tab-header" 
+            [class.active]="activeTab === 'warranty'"
+            (click)="setActiveTab('warranty')"
+          >
+            🛡️ Bảo Hành &amp; Đổi Trả
+          </button>
+        </div>
+
+        <div class="tab-content">
+          <!-- Description Tab -->
+          <div *ngIf="activeTab === 'description'" class="tab-pane">
+            <div class="description-content">
+              <h3>Chi Tiết Sản Phẩm</h3>
+              <p>{{ product.description }}</p>
+              
+              <div *ngIf="product.features && product.features.length > 0" class="detailed-features">
+                <h4>📋 Tính năng chi tiết:</h4>
+                <ul>
+                  <li *ngFor="let feature of product.features">{{ feature }}</li>
+                </ul>
+              </div>
+
+              <div class="product-benefits">
+                <h4>🎯 Lợi ích khi sử dụng:</h4>
+                <div class="benefits-grid">
+                  <div class="benefit-item">
+                    <span class="benefit-icon">🎵</span>
+                    <div class="benefit-text">
+                      <strong>Âm thanh sống động</strong>
+                      <p>Chất lượng âm thanh cao cấp, trải nghiệm âm nhạc chân thực</p>
+                    </div>
+                  </div>
+                  <div class="benefit-item">
+                    <span class="benefit-icon">🔋</span>
+                    <div class="benefit-text">
+                      <strong>Pin lâu dài</strong>
+                      <p>Thời lượng pin ấn tượng, sử dụng cả ngày dài</p>
+                    </div>
+                  </div>
+                  <div class="benefit-item">
+                    <span class="benefit-icon">🎧</span>
+                    <div class="benefit-text">
+                      <strong>Thoải mái khi đeo</strong>
+                      <p>Thiết kế ergonomic, đeo lâu không gây mỏi</p>
+                    </div>
+                  </div>
+                  <div class="benefit-item">
+                    <span class="benefit-icon">📱</span>
+                    <div class="benefit-text">
+                      <strong>Kết nối đa dạng</strong>
+                      <p>Tương thích với nhiều thiết bị và hệ điều hành</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Specifications Tab -->
+          <div *ngIf="activeTab === 'specs'" class="tab-pane">
+            <h3>📊 Thông Số Kỹ Thuật</h3>
+            <div class="specs-table">
+              <div class="spec-row" *ngIf="product.brand">
+                <span class="spec-label">Thương hiệu</span>
+                <span class="spec-value">{{ product.brand }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.category">
+                <span class="spec-label">Danh mục</span>
+                <span class="spec-value">{{ product.category }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.type">
+                <span class="spec-label">Loại sản phẩm</span>
+                <span class="spec-value">{{ product.type }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.weight">
+                <span class="spec-label">Trọng lượng</span>
+                <span class="spec-value">{{ product.weight }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.batteryLife">
+                <span class="spec-label">Thời lượng pin</span>
+                <span class="spec-value">{{ product.batteryLife }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.connectivity">
+                <span class="spec-label">Kết nối</span>
+                <span class="spec-value">{{ formatArray(product.connectivity) }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.material">
+                <span class="spec-label">Chất liệu</span>
+                <span class="spec-value">{{ product.material }}</span>
+              </div>
+              <div class="spec-row" *ngIf="hasSpec(product.noiseCancellation)">
+                <span class="spec-label">Chống ồn</span>
+                <span class="spec-value">{{ product.noiseCancellation ? 'Có' : 'Không' }}</span>
+              </div>
+              <div class="spec-row" *ngIf="hasSpec(product.waterResistant)">
+                <span class="spec-label">Chống nước</span>
+                <span class="spec-value">{{ product.waterResistant ? 'Có' : 'Không' }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.warranty">
+                <span class="spec-label">Bảo hành</span>
+                <span class="spec-value">{{ product.warranty }}</span>
+              </div>
+              <div class="spec-row" *ngIf="product.compatibility">
+                <span class="spec-label">Tương thích</span>
+                <span class="spec-value">{{ formatArray(product.compatibility) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews Tab -->
+          <div *ngIf="activeTab === 'reviews'" class="tab-pane">
+            <div class="reviews-content">
+              <div class="reviews-summary">
+                <div class="overall-rating">
+                  <div class="rating-score">{{ product.rating }}</div>
+                  <div class="rating-stars-large">{{ getStarRating(product.rating || 0) }}</div>
+                  <div class="rating-text">Dựa trên {{ product.reviews }} đánh giá</div>
+                </div>
+                
+                <div class="rating-breakdown">
+                  <div class="rating-bar">
+                    <span class="rating-label">5 sao</span>
+                    <div class="rating-progress">
+                      <div class="progress-bar" [style.width]="'75%'"></div>
+                    </div>
+                    <span class="rating-count">75%</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">4 sao</span>
+                    <div class="rating-progress">
+                      <div class="progress-bar" [style.width]="'15%'"></div>
+                    </div>
+                    <span class="rating-count">15%</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">3 sao</span>
+                    <div class="rating-progress">
+                      <div class="progress-bar" [style.width]="'7%'"></div>
+                    </div>
+                    <span class="rating-count">7%</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">2 sao</span>
+                    <div class="rating-progress">
+                      <div class="progress-bar" [style.width]="'2%'"></div>
+                    </div>
+                    <span class="rating-count">2%</span>
+                  </div>
+                  <div class="rating-bar">
+                    <span class="rating-label">1 sao</span>
+                    <div class="rating-progress">
+                      <div class="progress-bar" [style.width]="'1%'"></div>
+                    </div>
+                    <span class="rating-count">1%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="reviews-list">
+                <h4>Đánh giá gần đây</h4>
+                
+                <div class="review-item">
+                  <div class="review-header">
+                    <div class="reviewer-info">
+                      <span class="reviewer-name">Nguyễn Văn A</span>
+                      <span class="review-verified">✅ Đã xác thực mua hàng</span>
+                    </div>
+                    <div class="review-rating">★★★★★</div>
+                  </div>
+                  <p class="review-content">
+                    "Sản phẩm chất lượng tuyệt vời, âm thanh sống động. Giao hàng nhanh, đóng gói cẩn thận. 
+                    Tai nghe đeo rất thoải mái, pin sử dụng được lâu. Rất hài lòng với trải nghiệm!"
+                  </p>
+                  <div class="review-footer">
+                    <span class="review-date">15/12/2024</span>
+                    <div class="review-helpful">
+                      <button class="helpful-btn">👍 Hữu ích (24)</button>
+                      <button class="helpful-btn">👎 Không hữu ích (2)</button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="review-item">
+                  <div class="review-header">
+                    <div class="reviewer-info">
+                      <span class="reviewer-name">Trần Thị B</span>
+                      <span class="review-verified">✅ Đã xác thực mua hàng</span>
+                    </div>
+                    <div class="review-rating">★★★★☆</div>
+                  </div>
+                  <p class="review-content">
+                    "Tai nghe đẹp, âm bass tốt. Pin sử dụng được lâu. Nhưng hơi nặng khi đeo lâu. 
+                    Chất lượng âm thanh overall rất tốt, đáng đồng tiền."
+                  </p>
+                  <div class="review-footer">
+                    <span class="review-date">10/12/2024</span>
+                    <div class="review-helpful">
+                      <button class="helpful-btn">👍 Hữu ích (18)</button>
+                      <button class="helpful-btn">👎 Không hữu ích (1)</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="load-more-reviews">
+                  <button class="btn btn-outline">Xem thêm đánh giá</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warranty Tab -->
+          <div *ngIf="activeTab === 'warranty'" class="tab-pane">
+            <div class="warranty-content">
+              <h3>🛡️ Chính Sách Bảo Hành & Đổi Trả</h3>
+              
+              <div class="warranty-info">
+                <div class="warranty-item">
+                  <h4>📦 Chính sách bảo hành</h4>
                   <ul>
-                    @for (feature of product.features; track feature) {
-                      <li>{{ feature }}</li>
-                    }
+                    <li>Bảo hành chính hãng {{ product.warranty || '24 tháng' }}</li>
+                    <li>Bảo hành toàn quốc tại các trung tâm ủy quyền</li>
+                    <li>1 đổi 1 trong 30 ngày nếu có lỗi từ nhà sản xuất</li>
+                    <li>Hỗ trợ sửa chữa trong suốt thời gian bảo hành</li>
+                  </ul>
+                </div>
+
+                <div class="warranty-item">
+                  <h4>🔄 Chính sách đổi trả</h4>
+                  <ul>
+                    <li>Đổi trả trong 30 ngày nếu sản phẩm lỗi kỹ thuật</li>
+                    <li>Hoàn tiền 100% trong vòng 7 ngày nếu không hài lòng</li>
+                    <li>Miễn phí đổi trả, vận chuyển 2 chiều</li>
+                    <li>Sản phẩm phải còn nguyên vẹn, đầy đủ phụ kiện</li>
+                  </ul>
+                </div>
+
+                <div class="warranty-item">
+                  <h4>🚚 Chính sách giao hàng</h4>
+                  <ul>
+                    <li>Giao hàng miễn phí toàn quốc cho đơn từ 500.000đ</li>
+                    <li>Giao hàng nhanh trong 2-4 giờ tại nội thành</li>
+                    <li>Kiểm tra hàng trước khi thanh toán</li>
+                    <li>Hỗ trợ đóng gói quà tặng miễn phí</li>
                   </ul>
                 </div>
               </div>
-            }
 
-            @if (activeTab === 'specs') {
-              <div class="tab-pane">
-                <h3>Thông Số Kỹ Thuật</h3>
-                <div class="specs-table">
-                  <div class="spec-row">
-                    <span class="spec-label">Thương hiệu</span>
-                    <span class="spec-value">{{ product.brand }}</span>
-                  </div>
-                  <div class="spec-row">
-                    <span class="spec-label">Loại tai nghe</span>
-                    <span class="spec-value">{{ product.category }}</span>
-                  </div>
-                  <div class="spec-row">
-                    <span class="spec-label">Kết nối</span>
-                    <span class="spec-value">Bluetooth 5.0, Jack 3.5mm</span>
-                  </div>
-                  <div class="spec-row">
-                    <span class="spec-label">Thời lượng pin</span>
-                    <span class="spec-value">30 giờ</span>
-                  </div>
-                  <div class="spec-row">
-                    <span class="spec-label">Chống ồn</span>
-                    <span class="spec-value">Có</span>
-                  </div>
-                  <div class="spec-row">
-                    <span class="spec-label">Trọng lượng</span>
-                    <span class="spec-value">250g</span>
-                  </div>
+              <div class="support-contact">
+                <h4>📞 Liên hệ hỗ trợ</h4>
+                <div class="contact-info">
+                  <p><strong>Hotline:</strong> 1900 1234 (Miễn phí)</p>
+                  <p><strong>Email:</strong> support@athengaudio.com</p>
+                  <p><strong>Giờ làm việc:</strong> 8:00 - 22:00 hàng ngày</p>
+                  <p><strong>Địa chỉ:</strong> 123 Nguyễn Văn Linh, Quận 7, TP.HCM</p>
                 </div>
               </div>
-            }
-
-            @if (activeTab === 'reviews') {
-              <div class="tab-pane">
-                <h3>Đánh Giá Từ Khách Hàng</h3>
-                <div class="reviews-summary">
-                  <div class="overall-rating">
-                    <div class="rating-score">{{ product.rating }}</div>
-                    <div class="rating-stars-large">{{ getStarRating(product.rating) }}</div>
-                    <div class="rating-text">{{ product.reviews }} đánh giá</div>
-                  </div>
-                  
-                  <div class="reviews-list">
-                    <div class="review-item">
-                      <div class="review-header">
-                        <span class="reviewer-name">Nguyễn Văn A</span>
-                        <span class="review-rating">★★★★★</span>
-                      </div>
-                      <p class="review-content">
-                        "Sản phẩm chất lượng tuyệt vời, âm thanh sống động. Giao hàng nhanh, đóng gói cẩn thận."
-                      </p>
-                      <span class="review-date">15/12/2024</span>
-                    </div>
-                    
-                    <div class="review-item">
-                      <div class="review-header">
-                        <span class="reviewer-name">Trần Thị B</span>
-                        <span class="review-rating">★★★★☆</span>
-                      </div>
-                      <p class="review-content">
-                        "Tai nghe đẹp, âm bass tốt. Pin sử dụng được lâu. Nhưng hơi nặng khi đeo lâu."
-                      </p>
-                      <span class="review-date">10/12/2024</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Related Products -->
-        @if (relatedProducts.length > 0) {
-          <div class="related-products">
-            <h2 class="section-title">Sản Phẩm Liên Quan</h2>
-            <div class="related-products-grid">
-              @for (relatedProduct of relatedProducts; track relatedProduct.id) {
-                <div class="related-product-card" [routerLink]="['/products', relatedProduct.id]">
-                  <div class="product-image">
-                    <img [src]="relatedProduct.image" [alt]="relatedProduct.name">
-                  </div>
-                  <div class="product-info">
-                    <h3 class="product-name">{{ relatedProduct.name }}</h3>
-                    <p class="product-brand">{{ relatedProduct.brand }}</p>
-                    <div class="product-price">
-                      <span class="current-price">{{ relatedProduct.price | number }}₫</span>
-                      @if (relatedProduct.originalPrice) {
-                        <span class="original-price">{{ relatedProduct.originalPrice | number }}₫</span>
-                      }
-                    </div>
-                  </div>
-                </div>
-              }
             </div>
           </div>
-        }
+        </div>
       </div>
-    } @else {
-      <div class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Đang tải thông tin sản phẩm...</p>
+
+      <!-- Related Products -->
+      <div *ngIf="relatedProducts.length > 0" class="related-products">
+        <h2 class="section-title">Sản Phẩm Liên Quan</h2>
+        <div class="related-products-grid">
+          <div 
+            *ngFor="let relatedProduct of relatedProducts" 
+            class="related-product-card"
+            [routerLink]="['/product-detail', relatedProduct.id]"
+          >
+            <div class="product-image">
+              <img [src]="relatedProduct.image" [alt]="relatedProduct.name">
+              <div class="product-badge" *ngIf="relatedProduct.originalPrice">
+                -{{ ((relatedProduct.originalPrice - relatedProduct.price) / relatedProduct.originalPrice * 100) | number:'1.0-0' }}%
+              </div>
+            </div>
+            <div class="product-info">
+              <h3 class="product-name">{{ relatedProduct.name }}</h3>
+              <p class="product-brand">{{ relatedProduct.brand }}</p>
+              <div class="product-price">
+                <span class="current-price">{{ relatedProduct.price | number }}₫</span>
+                <span *ngIf="relatedProduct.originalPrice" class="original-price">
+                  {{ relatedProduct.originalPrice | number }}₫
+                </span>
+              </div>
+              <div class="product-rating">
+                <span class="stars">★★★★★</span>
+                <span class="rating">({{ relatedProduct.rating }})</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    }
+    </div>
+
+    <!-- Product Not Found -->
+    <div *ngIf="!isLoading && !product" class="not-found">
+      <div class="not-found-icon">😕</div>
+      <h2>Không tìm thấy sản phẩm</h2>
+      <p>Sản phẩm bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+      <button class="btn btn-primary" routerLink="/products">
+        🎵 Quay lại trang sản phẩm
+      </button>
+    </div>
   </div>
 </div>
