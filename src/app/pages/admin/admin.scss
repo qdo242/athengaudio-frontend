@@ -545,3 +545,186 @@
     border-top: 1px solid var(--border-color);
   }
 }
+// ... (Tất cả style cũ giữ nguyên) ...
+
+// THÊM MỚI: Style cho upload
+.modal-overlay.uploading {
+  .modal-content {
+    filter: blur(2px);
+  }
+}
+
+.upload-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1100;
+
+  .spinner-icon {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+.file-input {
+  padding: 0.5rem;
+  &::file-selector-button {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s;
+    &:hover {
+      background-color: #e2e8f0;
+    }
+  }
+}
+
+.image-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+}
+
+.image-preview-small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-grow: 1;
+  img {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+  .url-preview.small {
+    height: 38px;
+    font-size: 0.8rem;
+  }
+}
+
+.url-preview {
+  background: var(--bg-light);
+  color: var(--text-light);
+  font-size: 0.9rem;
+  flex-grow: 1;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.modal-overlay.uploading {
+  .modal-content {
+    filter: blur(2px);
+    pointer-events: none;
+  }
+}
+
+.upload-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1100;
+  font-weight: 500;
+
+  .spinner-icon {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+.file-input {
+  padding: 0.5rem;
+  flex-grow: 1;
+  &::file-selector-button {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    background: var(--bg-light);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s;
+    &:hover {
+      background-color: #e2e8f0;
+    }
+  }
+}
+
+.image-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+}
+
+.image-preview-small {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-grow: 1;
+  img {
+    width: 38px;
+    height: 38px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+  }
+  .url-preview.small {
+    height: 38px;
+    font-size: 0.8rem;
+  }
+}
+
+.url-preview {
+  background: var(--bg-light);
+  color: var(--text-light);
+  font-size: 0.9rem;
+  flex-grow: 1;
+  border-radius: 6px !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

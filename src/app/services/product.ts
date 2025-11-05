@@ -1,7 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, map, of } from 'rxjs';
 import { Product } from '../interfaces/product';
+
+// Định nghĩa kiểu trả về chung từ backend
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  products?: T;
+  product?: T;
+  count?: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -11,101 +20,87 @@ export class ProductService {
 
   constructor(private http: HttpClient) { }
 
-  // Kết nối với Spring Boot API
+  // Lấy tất cả sản phẩm
   getAllProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.apiUrl);
+    return this.http.get<ApiResponse<Product[]>>(this.apiUrl)
+      .pipe(map(response => response.products || []));
   }
 
+  // Lấy sản phẩm bằng ID
   getProductById(id: string): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`);
+    return this.http.get<ApiResponse<Product>>(`${this.apiUrl}/${id}`)
+      .pipe(map(response => response.product as Product));
   }
 
-  createProduct(product: Product): Observable<Product> {
-    return this.http.post<Product>(this.apiUrl, product);
+  // Tạo sản phẩm mới (SỬA: chấp nhận Partial<Product> để khớp với backend)
+  createProduct(product: Partial<Product>): Observable<Product> {
+    return this.http.post<ApiResponse<Product>>(this.apiUrl, product)
+      .pipe(map(response => response.product as Product));
   }
 
-  updateProduct(id: string, product: Product): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
+  // Cập nhật sản phẩm
+  updateProduct(id: string, product: Partial<Product>): Observable<Product> {
+    return this.http.put<ApiResponse<Product>>(`${this.apiUrl}/${id}`, product)
+      .pipe(map(response => response.product as Product));
   }
 
+  // Xóa sản phẩm (thực ra là cập nhật isActive = false)
   deleteProduct(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`)
+      .pipe(map(() => undefined));
   }
 
+  // Lấy sản phẩm theo Category
   getProductsByCategory(category: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/category/${category}`);
+    return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/category/${category}`)
+      .pipe(map(response => response.products || []));
   }
 
-  getActiveProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/active`);
+  // Lấy sản phẩm nổi bật
+  getFeaturedProducts(): Observable<Product[]> {
+    return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/featured`)
+      .pipe(map(response => response.products || []));
+  }
+  
+  // Lấy sản phẩm mới nhất
+  getNewestProducts(limit: number = 8): Observable<Product[]> {
+    return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/newest?limit=${limit}`)
+      .pipe(map(response => response.products || []));
+  }
+  
+  // Lấy sản phẩm giảm giá
+  getDiscountedProducts(): Observable<Product[]> {
+    return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/discounted`)
+      .pipe(map(response => response.products || []));
   }
 
-  getProductsByBrand(brand: string): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/brand/${brand}`);
+  // Tìm kiếm sản phẩm (chỉ theo keyword)
+  searchProducts(query: string): Observable<Product[]> {
+    return this.http.get<ApiResponse<Product[]>>(`${this.apiUrl}/search?q=${query}`)
+      .pipe(map(response => response.products || []));
   }
 
-  // Các method cho frontend
+  // --- Các method lọc client-side (Giữ lại vì backend chưa hỗ trợ lọc kết hợp) ---
+  
   getBrands(): Observable<string[]> {
-    return new Observable(observer => {
-      this.getAllProducts().subscribe({
-        next: (products) => {
-          const brands = products.map(p => p.brand);
-          const uniqueBrands = [...new Set(brands)].sort();
-          observer.next(uniqueBrands);
-          observer.complete();
-        },
-        error: (error) => observer.error(error)
-      });
-    });
+    return this.getAllProducts().pipe(
+      map(products => {
+        const brands = products.map(p => p.brand);
+        const uniqueBrands = [...new Set(brands)].sort();
+        return uniqueBrands;
+      })
+    );
   }
 
   getHeadphoneTypes(): Observable<string[]> {
-    return new Observable(observer => {
-      this.getAllProducts().subscribe({
-        next: (products) => {
-          const types = products
-            .filter(p => p.category === 'headphone' && p.type)
-            .map(p => p.type as string);
-          const uniqueTypes = [...new Set(types)].sort();
-          observer.next(uniqueTypes);
-          observer.complete();
-        },
-        error: (error) => observer.error(error)
-      });
-    });
-  }
-
-  searchProducts(query: string, category?: string, brand?: string, connectivity?: string[], type?: string): Observable<Product[]> {
-    return new Observable(observer => {
-      this.getAllProducts().subscribe({
-        next: (products) => {
-          let filtered = products;
-
-          if (query) {
-            filtered = filtered.filter(p => 
-              p.name.toLowerCase().includes(query.toLowerCase()) ||
-              p.brand.toLowerCase().includes(query.toLowerCase()) ||
-              p.description.toLowerCase().includes(query.toLowerCase())
-            );
-          }
-
-          if (category && category !== 'all') {
-            filtered = filtered.filter(p => p.category === category);
-          }
-
-          if (brand && brand !== 'all') {
-            filtered = filtered.filter(p => p.brand === brand);
-          }
-
-          if (type && type !== 'all' && (category === 'headphone' || category === 'all')) {
-            filtered = filtered.filter(p => p.type === type);
-          }
-
-          observer.next(filtered);
-          observer.complete();
-        },
-        error: (error) => observer.error(error)
-      });
-    });
+    return this.getAllProducts().pipe(
+      map(products => {
+        const types = products
+          .filter(p => p.category === 'headphone' && p.type)
+          .map(p => p.type as string);
+        const uniqueTypes = [...new Set(types)].sort();
+        return uniqueTypes;
+      })
+    );
   }
 }
