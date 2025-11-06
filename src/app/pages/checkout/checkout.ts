@@ -35,7 +35,7 @@ export class Checkout implements OnInit, OnDestroy {
     note: ''
   };
 
-  paymentMethod: 'COD' | 'CREDIT_CARD' | 'PAYPAL' = 'COD'; // Khớp với enum backend
+  paymentMethod: 'COD' | 'CREDIT_CARD' | 'PAYPAL' | 'BANK_TRANSFER' = 'COD'; // Khớp với enum backend
   private cartSubscription: Subscription | undefined;
 
   constructor(
@@ -120,6 +120,7 @@ export class Checkout implements OnInit, OnDestroy {
       productName: item.productName,
       price: item.price,
       quantity: item.quantity,
+      subTotal: item.price * item.quantity // SỬA: Thêm tính toán subTotal
     }));
 
     const newOrder: Order = {
@@ -181,8 +182,7 @@ export class Checkout implements OnInit, OnDestroy {
     return labels[field] || field;
   }
 
-  // Bỏ hàm saveOrderToStorage (vì đã gọi API)
-  // saveOrderToStorage(order: any): void { ... }
+  
 
   goBackToCart(): void {
     this.router.navigate(['/cart']);

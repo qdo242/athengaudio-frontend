@@ -1,18 +1,15 @@
 <div class="cart-page">
   <div class="container">
-    <!-- Header -->
     <div class="page-header">
       <h1>🛒 Giỏ Hàng Của Bạn</h1>
       <p>Kiểm tra và chỉnh sửa sản phẩm trước khi thanh toán</p>
     </div>
 
-    <!-- Loading State -->
     <div *ngIf="isLoading" class="loading-state">
       <div class="loading-spinner"></div>
       <p>Đang tải giỏ hàng...</p>
     </div>
 
-    <!-- Empty Cart -->
     <div *ngIf="!isLoading && cartItems.length === 0" class="empty-cart">
       <div class="empty-icon">📦</div>
       <h2>Giỏ hàng của bạn đang trống</h2>
@@ -27,10 +24,8 @@
       </div>
     </div>
 
-    <!-- Cart Content -->
     <div *ngIf="!isLoading && cartItems.length > 0" class="cart-content">
       <div class="cart-layout">
-        <!-- Cart Items -->
         <div class="cart-items-section">
           <div class="section-header">
             <h2>Sản phẩm trong giỏ ({{ cartItems.length }})</h2>
@@ -42,7 +37,7 @@
           <div class="cart-items">
             <div *ngFor="let item of cartItems; let i = index" class="cart-item">
               <div class="item-image">
-                <img [src]="'assets/images/default-product.png'" [alt]="item.productName" />
+                <img [src]="item.image || 'assets/images/default-product.png'" [alt]="item.productName" />
                 <div class="item-badge" *ngIf="item.subTotal && item.subTotal > item.price">
                   🔥 Hot
                 </div>
@@ -86,7 +81,6 @@
             </div>
           </div>
 
-          <!-- Cart Summary Mobile -->
           <div class="cart-summary-mobile">
             <div class="summary-row">
               <span>Tạm tính:</span>
@@ -106,7 +100,6 @@
           </div>
         </div>
 
-        <!-- Order Summary -->
         <div class="order-summary">
           <div class="summary-card">
             <h3>📋 Tóm tắt đơn hàng</h3>
@@ -173,7 +166,6 @@
               </div>
             </div>
 
-            <!-- Promotion Code -->
             <div class="promotion-section">
               <div class="promotion-header">
                 <span class="promotion-icon">🎁</span>
@@ -191,7 +183,6 @@
             </div>
           </div>
 
-          <!-- Trust Indicators -->
           <div class="trust-indicators">
             <div class="trust-item">
               <span class="trust-icon">⭐</span>
@@ -218,23 +209,35 @@
         </div>
       </div>
 
-      <!-- Recently Viewed -->
-      <div class="recently-viewed">
-        <h3 class="section-title">Sản phẩm vừa xem</h3>
-        <div class="recent-products">
-          <div class="recent-product" *ngFor="let i of [1,2,3,4]">
-            <div class="product-image">
-              <img src="assets/images/default-product.png" alt="Sản phẩm gợi ý">
-            </div>
-            <div class="product-info">
-              <h4>Tai nghe Bluetooth {{ i }}</h4>
-              <div class="product-price">
-                <span class="current-price">{{ (1000000 * i) | number }}₫</span>
-              </div>
-            </div>
-          </div>
+      
+      
+        <div class="recently-viewed">
+  
+  <h3 class="section-title">Sản phẩm vừa xem</h3>
+  
+  <div class="recent-products">
+    
+    <div class="recent-product" *ngFor="let product of productsToShow">
+      
+      <div class="product-image">
+        <img [src]="product.imageUrl" [alt]="product.name">
+      </div>
+      
+      <div class="product-info">
+        <h4>{{ product.name }}</h4>
+        <div class="product-price">
+          <span class="current-price">{{ product.price | number }}₫</span>
         </div>
       </div>
+    </div>
+
+    <div *ngIf="!productsToShow || productsToShow.length === 0">
+        <p>Không tìm thấy sản phẩm nào.</p>
+    </div>
+
+  </div>
+</div>
+
     </div>
   </div>
 </div>

@@ -7,7 +7,6 @@ import { ProductService } from '../../services/product';
 import { AuthService } from '../../services/auth';
 import { Order, OrderService } from '../../services/order';
 import { FileService } from '../../services/file';
-
 @Component({
   selector: 'app-admin',
   standalone: true,

@@ -42,27 +42,24 @@ export class ProductCard implements OnInit {
       }
       return `http://localhost:8080${url}`; // Gắn base URL của backend
     }
+// SỬA: Logic mới theo yêu cầu (Ưu tiên gallery[0] nếu có)
+getSafeDisplayImage(): string {
+  const defaultPlaceholder = 'assets/images/default-product.png';
+  let imageUrl = '';
 
-    // SỬA: Logic thông minh để chọn ảnh (Ưu tiên ảnh bìa)
-    getSafeDisplayImage(): string {
-      const defaultPlaceholder = 'assets/images/default-product.png';
-      
-      // 1. Ưu tiên Ảnh Bìa (product.image)
-      let imageUrl = this.getFullImageUrl(this.product.image);
-      
-      // 2. Nếu Ảnh Bìa rỗng, thử lấy Ảnh Gallery đầu tiên
-      if (!imageUrl || imageUrl.endsWith('default-product.png')) { 
-        if (this.product.images && this.product.images.length > 0) {
-          const firstGalleryImage = this.getFullImageUrl(this.product.images[0]);
-          if (firstGalleryImage && !firstGalleryImage.endsWith('default-product.png')) {
-            imageUrl = firstGalleryImage; // Dùng ảnh gallery
-          }
-        }
-      }
-      
-      // 3. Nếu cả hai đều rỗng, dùng ảnh mặc định
-      return imageUrl || defaultPlaceholder;
-    }
+  // 1. Ưu tiên ảnh Gallery đầu tiên (theo yêu cầu mới)
+  if (this.product.images && this.product.images.length > 0) {
+    imageUrl = this.getFullImageUrl(this.product.images[0]);
+  }
+  
+  // 2. Nếu Gallery rỗng, thử lấy Ảnh Bìa
+  if (!imageUrl || imageUrl.endsWith('default-product.png')) { 
+    imageUrl = this.getFullImageUrl(this.product.image);
+  }
+  
+  // 3. Nếu cả hai đều rỗng, dùng ảnh mặc định
+  return imageUrl || defaultPlaceholder;
+}
 
     getDiscount(): number {
       if (this.product.originalPrice && this.product.originalPrice > this.product.price) {

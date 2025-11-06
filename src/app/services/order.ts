@@ -2,12 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// Các interface gốc (dùng trong Angular, giữ kiểu number)
 export interface OrderItem {
   productId: string;
   productName: string;
   price: number;
   quantity: number;
   subTotal?: number;
+  image?: string; // <-- THÊM DÒNG NÀY (tùy chọn)
 }
 
 export interface Address {
@@ -25,11 +27,34 @@ export interface Order {
   items: OrderItem[];
   totalAmount: number;
   status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
-  paymentMethod: 'CREDIT_CARD' | 'PAYPAL' | 'COD';
+  paymentMethod: 'CREDIT_CARD' | 'PAYPAL' | 'COD' | 'BANK_TRANSFER';
   shippingAddress: Address;
   createdAt?: string;
   updatedAt?: string;
 }
+
+// === Định nghĩa kiểu Request mới cho Backend (giá kiểu string, không có subTotal) ===
+interface OrderItemRequest {
+  productId: string;
+  productName: string;
+  price: string; // Đổi sang string
+  quantity: number;
+  image?: string; // Gửi cả ảnh
+  // subTotal BỊ LOẠI BỎ
+}
+
+interface OrderRequest {
+  id?: string;
+  userId: string;
+  items: OrderItemRequest[]; // Sử dụng interface request
+  totalAmount: string; // Đổi sang string
+  status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+  paymentMethod: 'CREDIT_CARD' | 'PAYPAL' | 'COD' | 'BANK_TRANSFER';
+  shippingAddress: Address;
+  createdAt?: string;
+  updatedAt?: string;
+}
+// =======================================================
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +64,7 @@ export class OrderService {
 
   constructor(private http: HttpClient) { }
 
-  // Kết nối với Spring Boot API
+  // Các hàm GET giữ nguyên, nhận về Order (với number)
   getAllOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(this.apiUrl);
   }
@@ -52,8 +77,24 @@ export class OrderService {
     return this.http.get<Order[]>(`${this.apiUrl}/user/${userId}`);
   }
 
+  // Hàm POST được sửa để gửi đi OrderRequest (với string)
   createOrder(order: Order): Observable<Order> {
-    return this.http.post<Order>(this.apiUrl, order);
+    // SỬA: Chuyển đổi Order (number) sang OrderRequest (string)
+    const orderRequest: OrderRequest = {
+      ...order,
+      totalAmount: order.totalAmount.toString(), // Chuyển totalAmount sang string
+      items: order.items.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        price: item.price.toString(), // Chuyển price sang string
+        quantity: item.quantity,
+        image: item.image // Gửi cả ảnh
+        // Không gửi subTotal
+      }))
+    };
+    
+    // Gửi orderRequest (đã chuyển đổi)
+    return this.http.post<Order>(this.apiUrl, orderRequest);
   }
 
   updateOrderStatus(id: string, status: Order['status']): Observable<Order> {

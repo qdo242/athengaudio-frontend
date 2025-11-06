@@ -56,7 +56,7 @@
               <h1 class="product-title">{{ product.name }}</h1>
               <div class="product-meta">
                 <span class="product-brand">Thương hiệu: {{ product.brand }}</span>
-                <span class="product-sku">Mã SP: #{{ product.id }}</span>
+                <!-- <span class="product-sku">Mã SP: #{{ product.id }}</span> -->
                 <span class="product-stock" [class.in-stock]="product.stock > 0" [class.out-of-stock]="product.stock <= 0">
                   {{ product.stock > 0 ? 'Còn hàng' : 'Hết hàng' }}
                 </span>
